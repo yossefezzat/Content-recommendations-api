@@ -13,7 +13,7 @@ export class FilterContentDto {
 
   @ApiPropertyOptional({
     description: 'Comma-separated tags to filter content',
-    example: 'tag1,tag2',
+    example: 'TECHNOLOGY,HEALTH',
   })
   @IsOptional()
   @IsString()
