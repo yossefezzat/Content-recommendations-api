@@ -17,8 +17,20 @@ export class RecommendationsService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache
   ) {}
 
+  /**
+   * Calculates a user's tag profile based on their interactions and preferences.
+   * 
+   * This method computes a score for each tag associated with the user's interactions
+   * and preferences. The score is determined by the type of interaction, its weight,
+   * and any associated rating. User preferences are also factored into the score.
+   * 
+   * @param user - The user for whom the tag profile is being calculated. Includes user preferences.
+   * @param interactions - A list of interactions the user has had with content, including tags, type, and rating.
+   * @returns A record where the keys are tags and the values are the calculated scores for each tag.
+   */
   private calculateUserTagProfile(user: User, interactions: Interaction[]): Record<string, number> {
     const tagScores: Record<string, number> = {};
+    // TODO: make this env variable
     const interactionWeights = {
       like: 1,
       comment: 3,
@@ -44,6 +56,15 @@ export class RecommendationsService {
     return tagScores;
   }
 
+  /**
+   * Calculates a score for a given content item based on its tags and freshness.
+   *
+   * @param content - The content item to be scored, containing tags and creation date.
+   * @param tagScores - A record mapping tags to their respective scores.
+   * @returns The calculated score for the content item, which is a combination of 
+   *          tag-based scoring and a freshness boost. The freshness boost decreases 
+   *          as the content gets older, following a decay curve.
+   */
   private scoreContent(content: Content, tagScores: Record<string, number>): number {
     const tagScore = content.tags.reduce((sum, tag) => sum + (tagScores[tag] || 0), 0);
     const daysSinceCreated =(Date.now() - new Date(content.createdAt).getTime()) / (1000 * 60 * 60 * 24);
@@ -51,10 +72,32 @@ export class RecommendationsService {
     return tagScore + freshnessBoost * 10;
   }
 
+  /**
+   * Caches the recommendations for a specific user and page.
+   *
+   * @param userId - The unique identifier of the user.
+   * @param page - The page number of the recommendations.
+   * @param pageSize - The number of recommendations per page.
+   * @param recommendations - The list of content recommendations to cache.
+   * 
+   * @remarks
+   * The cached recommendations are stored with a key in the format 
+   * `recommendations:{userId}:{page}:{pageSize}` and expire after 1 hour.
+   * The expiration time is currently hardcoded but should be configurable via an environment variable.
+   */
   async cacheRecommendations(userId: string, page: number, pageSize: number, recommendations: Content[]) {
-    await this.cacheManager.set(`recommendations:${userId}:${page}:${pageSize}`, recommendations, 60*60); // TODO: to be an ENV Cache for 1 hour
+    const cacheTTL = parseInt(process.env.RECOMMENDATIONS_CACHE_TTL || '3600', 10);
+    await this.cacheManager.set(`recommendations:${userId}:${page}:${pageSize}`, recommendations, cacheTTL);
   }
  
+  /**
+   * Retrieves cached recommendations for a specific user and pagination parameters.
+   * 
+   * @param userId - The unique identifier of the user for whom recommendations are being fetched.
+   * @param page - The page number of the recommendations to retrieve.
+   * @param pageSize - The number of recommendations per page.
+   * @returns A promise that resolves to an array of cached recommendations if available, or `null` if no cache exists.
+   */
   async getCachedRecommendations(userId: string, page: number, pageSize: number) {
     const cachedRecommendations = await this.cacheManager.get<Content[]>(`recommendations:${userId}:${page}:${pageSize}`);
     if (cachedRecommendations) {
@@ -63,6 +106,14 @@ export class RecommendationsService {
     return null;
   }
 
+  /**
+   * Retrieves personalized content recommendations for a user based on their interactions and preferences.
+   * 
+   * @param userId - The unique identifier of the user for whom recommendations are being generated.
+   * @param page - The page number for paginated results (default is 1).
+   * @param pageSize - The number of recommendations to return per page (default is 10).
+   * @returns A promise that resolves to an array of recommended content items.
+   */
   async getRecommendations(userId: string, page: number = 1, pageSize: number = 10): Promise<Content[]> {
     const cachedRecommendations = await this.getCachedRecommendations(userId, page, pageSize);
     if (cachedRecommendations) {

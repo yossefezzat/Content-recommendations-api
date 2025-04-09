@@ -16,9 +16,9 @@ export class RecommendationsController {
   @ApiHeader({ name: 'x-apikey', description: 'API key for authentication', required: true })
   @ApiOkResponse({ description: '', type: [RecommendationDto] })
   findUserRecommendations(
-    @Param('userId') userId: string,
-    @Query('page') page: number,
-    @Query('limit') limit: number,
+    @Param('userId') userId,
+    @Query('page') page: number | undefined,
+    @Query('limit') limit: number | undefined,
   ) {
     return this.recommendationsService.getRecommendations(userId, page, limit);
   }

@@ -21,7 +21,7 @@ import { ApiKeyMiddleware } from './shared/api-key-middleware';
       type: 'sqlite',
       database: join(__dirname, '..', 'sqlite', 'data.sqlite'),
       entities: [join(__dirname, '**', '*.entity.{ts,js}')],
-      synchronize: true,
+      synchronize: false,
     }),
     ContentsModule, 
     InteractionsModule, 
