@@ -1,5 +1,5 @@
 # 📚 Content Recommendation API
-A scalable, tag-based personalized content recommendation system built with **NestJS**, **TypeORM**, **SQLite**, and **Redis**. This project demonstrates clean architecture principles, intelligent caching, and real-time content scoring based on user interactions and preferences.
+A personalized content recommendation system using **NestJS**, **TypeORM**, **SQLite**, and **Redis**. It features real-time scoring, caching, and tag-based recommendations based on user interactions.
 
 ---
 
@@ -43,8 +43,6 @@ These weights can be fine-tuned further using A/B testing or analytics in a prod
 ### 🗂️ Filter Unseen Content  
 Only show content the user hasn’t seen, created in the last 30 days.
 
-### ⚡ Caching with Redis  
-
 ---
 
 ## 🏗️ System Architecture
@@ -73,7 +71,7 @@ Comprehensive **unit** and **integration tests** are implemented to guarantee sy
 
 ### 🔄 System Workflow
 
-```plaintext
+```
 Users     Contents
   |           |
   v           v
