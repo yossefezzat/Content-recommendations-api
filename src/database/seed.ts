@@ -79,6 +79,40 @@ async function seed() {
     await interactionRepo.save(interaction);
   }
 
+    // 4. Calculate Popularity for Each Content
+    for (const content of contents) {
+      const interactions = await interactionRepo.find({
+        where: { content: { id: content.id } },
+      });
+  
+      const interactionCounts = {
+        ratings: interactions.filter(i => i.type === InteractionType.RATE).map(i => i.rating || 0),
+        comments: interactions.filter(i => i.type === InteractionType.COMMENT).length,
+        likes: interactions.filter(i => i.type === InteractionType.LIKE).length,
+        shares: interactions.filter(i => i.type === InteractionType.SHARE).length,
+      };
+  
+      const weights = {
+        like: 1,
+        comment: 3,
+        share: 5,
+        rate: 2,
+      };
+  
+      const avgRating =
+        interactionCounts.ratings.length > 0
+          ? interactionCounts.ratings.reduce((sum, r) => sum + r, 0) / interactionCounts.ratings.length
+          : 0;
+  
+      content.popularity =
+        weights.like * interactionCounts.likes +
+        weights.comment * interactionCounts.comments +
+        weights.share * interactionCounts.shares +
+        weights.rate * avgRating;
+  
+      await contentRepo.save(content);
+    }
+
   console.log('✅ Seeding complete.');
   await AppDataSource.destroy();
 }
