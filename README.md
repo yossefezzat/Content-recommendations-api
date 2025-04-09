@@ -5,7 +5,7 @@ A personalized content recommendation system using **NestJS**, **TypeORM**, **SQ
 
 ## 🚀 Features
 
-- ✅ Track user **interactions**: `view`, `like`, `bookmark`, `rate (1-5 stars)`
+- ✅ Track user **interactions**: `like`, `comment`, `share`, `rate (1-5 stars)`
 - ✅ Tag-weighted **content-based recommendation engine**
 - ✅ Real-time scoring with **freshness decay**
 - ✅ **Redis-powered caching** for blazing fast responses
@@ -21,10 +21,10 @@ A personalized content recommendation system using **NestJS**, **TypeORM**, **SQ
 
 2. **Interaction Profile**  
   Interactions are scored with different weights to reflect real-world user intent:  
-  - `view`: 1 (Indicates casual interest, often just scrolling)  
-  - `like`: 2 (Shows engagement but may be habitual)  
-  - `bookmark`: 3 (Represents active intent to revisit)  
-  - `rate`: 4 + (rating value) (Demonstrates thoughtful evaluation and clarity)  
+  - `like`: 1 (Light positive signal - easy to perform but shows preference)  
+  - `comment`: 3 (High intent - requires time/effort, indicates strong interest)  
+  - `share`: 5 (Very high value - user endorses content publicly, viral potential)  
+  - `rate`: 2 + rating value (Explicit evaluation - combines base weight with user's 1-5 star score)  
 
   These weights are designed to prioritize user preferences, providing the most reliable signal of relevance for personalized recommendations.
 
@@ -75,7 +75,7 @@ Comprehensive **unit** and **integration tests** are implemented to guarantee sy
 Users     Contents
   |           |
   v           v
-[Interactions] (view, like, rate)
+[Interactions] (like, comment, rate)
     |
     v
 +---------------------------+
